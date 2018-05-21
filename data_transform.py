@@ -15,6 +15,7 @@ class data_transform():
         self.tokenizer = None
         self.label_set = {}
         self.extraction = {}
+        self.tokenizer_fact = None
 
     def read_data(self, path=None):
         '''
@@ -38,7 +39,7 @@ class data_transform():
 
     def extract_data(self, name='accusation'):
         '''
-        提取需要信息
+        提取需要的信息，以字典形式存储
         :param name: 提取内容
         :return: 事实描述,罪名,相关法条
         eg. data_valid_accusations = data_transform.extract_data(name='accusation')
@@ -70,8 +71,9 @@ class data_transform():
                 texts_cut = [jieba.lcut(one_text) for one_text in texts]
         else:
             texts_cut = texts
-        texts_cut_len = len(texts_cut)
         del texts
+        texts_cut_len = len(texts_cut)
+
         if texts_cut_savepath is not None:
             with open(texts_cut_savepath, 'w') as f:
                 json.dump(texts_cut, f)
@@ -89,8 +91,11 @@ class data_transform():
                 else:
                     print('tokenizer finish fit %d samples' % texts_cut_len)
             self.tokenizer_fact = tokenizer_fact
+
         fact_seq = tokenizer_fact.texts_to_sequences(texts=texts_cut)
-        #内存不够，删除
+        print('finish texts to sequences')
+
+        # 内存不够，删除
         del texts_cut
 
         n = 0
@@ -132,9 +137,9 @@ class data_transform():
 
     def creat_labels(self, label_set=None, labels=None, name='accusation'):
         '''
-        调用creat_label遍历标签列表
-        :param label_set: 标签集合
-        :param labels: 标签数据，没有则调用extract_data函数提取
+        调用creat_label遍历标签列表生成one-hot二维数组
+        :param label_set: 标签集合,数组
+        :param labels: 标签数据，二维列表，没有则调用extract_data函数提取
         :param name:
         :return:
         '''
@@ -143,4 +148,4 @@ class data_transform():
         if labels is None:
             labels = self.extraction[name]
         labels_one_hot = list(map(lambda x: self.creat_label(label=x, label_set=label_set), labels))
-        self.labels_one_hot = labels_one_hot
+        return labels_one_hot

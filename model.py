@@ -1,32 +1,82 @@
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.models import Sequential
-from keras.layers.embeddings import Embedding
-from keras.layers.core import Dense, initializers, Dropout, Masking
-from keras.layers import Conv1D, InputLayer
-from keras.layers.recurrent import LSTM,GRU
-from keras.optimizers import SGD, Adagrad, Adam
+from keras.models import Model
+from keras.layers import Dense, Embedding, Input
+from keras.layers import GRU, Bidirectional, GlobalMaxPool1D, Dropout
 import numpy as np
+import pandas as pd
 
-n = 0
-tokenizer_fact = Tokenizer(num_words=5000)
-while n < len(train_fact_cut):
-    tokenizer_fact.fit_on_texts(texts=train_fact_cut[n:n + 10000])
-    n += 10000
-    print('finish fit %d samples' % n)
-fact_seq = tokenizer_fact.texts_to_sequences(texts=train_fact_cut)
-fact_pad_seq = pad_sequences(fact_seq[0:100], maxlen=500, padding='post', value=0, dtype='int')
+num_words=20000
+maxlen=400
 
-fact_pad_seq=[]
-n = 0
-while n < len(train_fact_cut):
-    fact_pad_seq+=list(pad_sequences(fact_seq[n:n+10000], maxlen=500, padding='post', value=0, dtype='int'))
-    n += 10000
-    print('finish fit %d samples' % n)
+train_fact_pad_seq = np.load('./data_deal/fact_pad_seq/train_fact_pad_seq_%d_%d.npy'%(num_words,maxlen))
+valid_fact_pad_seq = np.load('./data_deal/fact_pad_seq/valid_fact_pad_seq_%d_%d.npy'%(num_words,maxlen))
+test_fact_pad_seq = np.load('./data_deal/fact_pad_seq/test_fact_pad_seq_%d_%d.npy'%(num_words,maxlen))
 
-m=np.array(fact_pad_seq)
-np.save()
+train_labels = np.load('./data_deal/labels/train_labels_accusation.npy')
+valid_labels = np.load('./data_deal/labels/valid_labels_accusation.npy')
+test_labels = np.load('./data_deal/labels/test_labels_accusation.npy')
+
+set_accusation = np.load('./data_deal/set/set_accusation.npy')
+
+data_input = Input(shape=[valid_fact_pad_seq.shape[1]])
+word_vec = Embedding(input_dim=num_words + 1,
+                     input_length=maxlen,
+                     output_dim=128,
+                     mask_zero=0,
+                     name='Embedding')(data_input)
+x = Bidirectional(GRU(500, return_sequences=True))(word_vec)
+x = GlobalMaxPool1D()(x)
+x = Dropout(0.1)(x)
+x = Dense(500, activation="relu")(x)
+x = Dropout(0.1)(x)
+x = Dense(valid_labels.shape[1], activation="sigmoid")(x)
+model = Model(inputs=data_input, outputs=x)
+model.compile(loss='binary_crossentropy',
+              optimizer='adam',
+              metrics=['accuracy'])
+
+model.fit(x=train_fact_pad_seq, y=train_labels,
+          batch_size=100, epochs=1,
+          validation_data=(valid_fact_pad_seq, valid_labels), verbose=1)
+
+model.save('./model/Bidirectional_GRU_GlobalMaxPool1D_epochs_2.h5')
+
+x = model.predict(valid_fact_pad_seq[0:100])
 
 
+def label2tag(labels):
+    return [set_accusation[i == 1] for i in labels]
 
-c=np.concatenate((a,b),axis=0)
+
+def predict2tag(predictions, n, score=True):
+    if score:
+        return [set_accusation[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions], \
+               [i[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions]
+    else:
+        return [set_accusation[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions]
+
+
+print(label2tag(valid_labels[11500:11520]), '\n',
+      predict2tag(predictions=model.predict(valid_fact_pad_seq[11500:11520]), n=1, score=False))
+
+sum(x[0] > 0.5)
+sorted(x[0], reverse=True)[0:3]
+
+
+y1=label2tag(valid_labels[:])
+y2=predict2tag(predictions=model.predict(valid_fact_pad_seq[:]),n=1, score=False)
+r=pd.DataFrame({'label':y1,'predict':y2})
+r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
+p=[y1[i][0]==y2[i][0] for i in range(len(y1))]
+sum(p)/len(p)
+
+def f1(f):
+    def f2(x):
+        return f(x)+100
+    return f2
+
+@f1
+def f3(x):
+    return 2*x
+
+def f4(x):
+    return f3(x)+100

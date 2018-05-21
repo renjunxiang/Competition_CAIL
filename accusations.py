@@ -1,12 +1,15 @@
 from data_transform import data_transform
 import json
-import time
 import jieba
+
 jieba.setLogLevel('WARN')
 import numpy as np
+
+num_words=20000
+maxlen=400
 ########################################################################################
 # train数据集处理
-data_transform_train=data_transform()
+data_transform_train = data_transform()
 
 # 读取json文件
 data_train = data_transform_train.read_data(path='./data/data_train.json')
@@ -17,25 +20,32 @@ train_fact = data_transform_train.extraction['fact']
 
 # #提取需要信息(分词速度太慢，保存分词结果)
 # train_fact_cut=[jieba.lcut(i) for i in train_fact]
-# with open('./data_cut/train_fact_cut.json','w') as f:
+# with open('./data_deal/data_cut/train_fact_cut.json','w') as f:
 #     json.dump(train_fact_cut,f)
 
-with open('./data_cut/train_fact_cut.json','r') as f:
-    train_fact_cut=json.load(f)
+with open('./data_deal/data_cut/train_fact_cut_new.json', 'r') as f:
+    train_fact_cut = json.load(f)
 
-train_fact_pad_seq=data_transform_train.text2seq(texts=train_fact_cut,needcut=False,num_words=10000, maxlen=400)
+data_transform_train.text2seq(texts=train_fact_cut, needcut=False, num_words=num_words, maxlen=maxlen)
 tokenizer_fact = data_transform_train.tokenizer_fact
-np.save('./data_cut/train_fact_pad_seq.npy',train_fact_pad_seq)
+np.save('./data_deal/fact_pad_seq/train_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_train.fact_pad_seq)
 # train_fact_pad_seq=np.load('./data_cut/train_fact_pad_seq.npy')
+
+# 创建数据one-hot标签
 data_transform_train.extract_data(name='accusation')
 train_accusations = data_transform_train.extraction['accusation']
 data_transform_train.creat_label_set(name='accusation')
-data_transform_train.creat_labels(name='accusation')
-train_labels=np.array(data_transform_train.labels_one_hot)
-np.save('./data_cut/train_labels.npy',train_labels)
+train_labels = data_transform_train.creat_labels(name='accusation')
+np.save('./data_deal/labels/train_labels_accusation.npy', train_labels)
+
+data_transform_train.extract_data(name='relevant_articles')
+train_relevant_articless = data_transform_train.extraction['relevant_articles']
+data_transform_train.creat_label_set(name='relevant_articles')
+train_labels = data_transform_train.creat_labels(name='relevant_articles')
+np.save('./data_deal/labels/train_labels_relevant_articles.npy', train_labels)
 ########################################################################################
 # valid数据集处理
-data_transform_valid=data_transform()
+data_transform_valid = data_transform()
 
 # 读取json文件
 data_valid = data_transform_valid.read_data(path='./data/data_valid.json')
@@ -47,19 +57,26 @@ valid_fact = data_transform_valid.extraction['fact']
 # #提取需要信息(分词速度太慢，保存分词结果)
 # valid_fact_cut=[jieba.lcut(i) for i in valid_fact]
 
-with open('./data_cut/valid_fact_cut.json','r') as f:
-    valid_fact_cut=json.load(f)
+with open('./data_deal/data_cut/valid_fact_cut_new.json', 'r') as f:
+    valid_fact_cut = json.load(f)
 
-valid_fact_pad_seq=data_transform_valid.text2seq(texts=valid_fact_cut,needcut=False,
-                                                 tokenizer_fact=tokenizer_fact,num_words=10000, maxlen=400)
-np.save('./data_cut/valid_fact_pad_seq.npy',valid_fact_pad_seq)
+data_transform_valid.text2seq(texts=valid_fact_cut, needcut=False,
+                              tokenizer_fact=tokenizer_fact, num_words=num_words, maxlen=maxlen)
+np.save('./data_deal/fact_pad_seq/valid_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_valid.fact_pad_seq)
 # valid_fact_pad_seq=np.load('./data_cut/valid_fact_pad_seq.npy')
+
+# 创建数据one-hot标签
 data_transform_valid.extract_data(name='accusation')
 valid_accusations = data_transform_valid.extraction['accusation']
 data_transform_valid.creat_label_set(name='accusation')
-data_transform_valid.creat_labels(name='accusation')
-valid_labels=np.array(data_transform_valid.labels_one_hot)
-np.save('./data_cut/valid_labels.npy',valid_labels)
+valid_labels = data_transform_valid.creat_labels(name='accusation')
+np.save('./data_deal/labels/valid_labels_accusation.npy', valid_labels)
+
+data_transform_valid.extract_data(name='relevant_articles')
+valid_relevant_articless = data_transform_valid.extraction['relevant_articles']
+data_transform_valid.creat_label_set(name='relevant_articles')
+valid_labels = data_transform_valid.creat_labels(name='relevant_articles')
+np.save('./data_deal/labels/valid_labels_relevant_articles.npy', valid_labels)
 ########################################################################################
 # test数据集处理
 data_transform_test = data_transform()
@@ -74,16 +91,27 @@ test_fact = data_transform_test.extraction['fact']
 # #提取需要信息(分词速度太慢，保存分词结果)
 # test_fact_cut=[jieba.lcut(i) for i in test_fact]
 
-with open('./data_cut/test_fact_cut.json', 'r') as f:
+with open('./data_deal/data_cut/test_fact_cut_new.json', 'r') as f:
     test_fact_cut = json.load(f)
 
-test_fact_pad_seq = data_transform_test.text2seq(texts=test_fact_cut, needcut=False,
-                                                 tokenizer_fact=tokenizer_fact, num_words=10000, maxlen=400)
-np.save('./data_cut/test_fact_pad_seq.npy', test_fact_pad_seq)
+data_transform_test.text2seq(texts=test_fact_cut, needcut=False,
+                             tokenizer_fact=tokenizer_fact, num_words=num_words, maxlen=maxlen)
+np.save('./data_deal/fact_pad_seq/test_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_test.fact_pad_seq)
 # test_fact_pad_seq=np.load('./data_cut/test_fact_pad_seq.npy')
+
+# 创建数据one-hot标签
 data_transform_test.extract_data(name='accusation')
 test_accusations = data_transform_test.extraction['accusation']
 data_transform_test.creat_label_set(name='accusation')
-data_transform_test.creat_labels(name='accusation')
-test_labels = np.array(data_transform_test.labels_one_hot)
-np.save('./data_cut/test_labels.npy', test_labels)
+test_labels = data_transform_test.creat_labels(name='accusation')
+np.save('./data_deal/labels/test_labels_accusation.npy', test_labels)
+
+data_transform_test.extract_data(name='relevant_articles')
+test_relevant_articless = data_transform_test.extraction['relevant_articles']
+data_transform_test.creat_label_set(name='relevant_articles')
+test_labels = data_transform_test.creat_labels(name='relevant_articles')
+np.save('./data_deal/labels/test_labels_relevant_articles.npy', test_labels)
+
+# 创建数据标签的集合，用于还原one-hot
+np.save('./data_deal/set/set_accusation.npy',data_transform_test.label_set['accusation'])
+np.save('./data_deal/set/set_relevant_articles.npy',data_transform_test.label_set['relevant_articles'])
