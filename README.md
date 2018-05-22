@@ -51,20 +51,7 @@ np.save('./data_deal/labels/train_labels_accusation.npy', train_labels)
 ```
 ### 模型训练
 * 脚本model.py通过构建双向GRU网络，做多目标检测，结果在result文件夹内<br>
-* 检查了预测结果，仅从文本数据的角度上看可能罪名标签还是有一些问题(不是质疑判决)，例如**valid数据中第十条**<br>
-{<br>
-	"criminals": ["连某某"], <br>
-	"term_of_imprisonment": {"death_penalty": false, "imprisonment": 14, "life_imprisonment": false}, <br>
-	"punish_of_money": 10000, <br>
-	"accusation": ["盗窃"], <br>
-	"relevant_articles": [264]}, <br>
-	"fact": "经审理查明：一、2016年8月16日早上，被告人连某某在保定市满城区精灵网吧二楼包厢内盗窃被害人李某某OPPOR7S手机一部。所盗手机已销售，赃款已挥霍......**五、2015年9月23日下午，被告人连某某从保定市满城区野里村连某家里骗走金娃牌柴油三轮车一辆卖掉，所骗取三轮车已销售，赃款已挥霍。2016年9月份左右一天下午，连某某从保定市满城区野里村连某甲经营的石板厂骗走金娃牌柴油三轮车一辆卖掉，所骗取三轮车已销售，赃款已挥霍。2016年8月份左右一天下午，连某某从保定市满城区白堡村曹某某经营的鸡场骗走爱玛牌电动车一辆卖掉，所骗取电动车已销售，赃款已挥霍。** 经保定市满城区涉案物品价格鉴证中心认定，被盗两辆三轮车、一辆电动车价值分别为1700元、1500元、1250元......"
-	} <br>
-该论述出现的粗体属于诈骗，我的预测结果应该是正确的 **['诈骗', '盗窃']** ，但是数据集中仅有 **['盗窃']** 。
-
 ![](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/Bidirectional_GRU_GlobalMaxPool1D_epochs.png)<br>
-### 预测模块
-* 按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中<br>
 ``` python
 from keras.models import Model
 from keras.layers import Dense, Embedding, Input
@@ -113,10 +100,16 @@ print(sum(q)/len(q))
 r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
 r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
 ```
+* 检查了预测结果，仅从文本数据的角度上看可能罪名标签还是有一些问题(不是质疑判决)，例如**valid数据中第十条**<br>
+{<br>
+	"criminals": ["连某某"], <br>
+	"term_of_imprisonment": {"death_penalty": false, "imprisonment": 14, "life_imprisonment": false}, <br>
+	"punish_of_money": 10000, <br>
+	"accusation": ["盗窃"], <br>
+	"relevant_articles": [264]}, <br>
+	"fact": "经审理查明：一、2016年8月16日早上，被告人连某某在保定市满城区精灵网吧二楼包厢内盗窃被害人李某某OPPOR7S手机一部。所盗手机已销售，赃款已挥霍......**五、2015年9月23日下午，被告人连某某从保定市满城区野里村连某家里骗走金娃牌柴油三轮车一辆卖掉，所骗取三轮车已销售，赃款已挥霍。2016年9月份左右一天下午，连某某从保定市满城区野里村连某甲经营的石板厂骗走金娃牌柴油三轮车一辆卖掉，所骗取三轮车已销售，赃款已挥霍。2016年8月份左右一天下午，连某某从保定市满城区白堡村曹某某经营的鸡场骗走爱玛牌电动车一辆卖掉，所骗取电动车已销售，赃款已挥霍。** 经保定市满城区涉案物品价格鉴证中心认定，被盗两辆三轮车、一辆电动车价值分别为1700元、1500元、1250元......"
+	} <br>
+该论述出现的粗体属于诈骗，我的预测结果应该是正确的 **['诈骗', '盗窃']** ，但是数据集中仅有 **['盗窃']** 。
 
-
-
-
-
-
-
+### 预测模块
+* 按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中<br>
