@@ -100,7 +100,8 @@ print(sum(q)/len(q))
 r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
 r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
 ```
-* 检查了预测结果，仅从文本数据的角度上看可能罪名标签还是有一些问题(不是质疑判决)<br>
+* 检查了预测结果，展示部分，仅从文本数据的角度上看可能罪名标签还是有一些问题(不是质疑判决)<br>
+![](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/部分预测结果.png)<br>
 例如**valid数据中第10条**<br>
 {<br>
 	"criminals": ["连某某"], <br>
