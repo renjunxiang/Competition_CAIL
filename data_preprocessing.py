@@ -15,19 +15,22 @@ data_transform_train = data_transform()
 # 读取json文件
 data_train = data_transform_train.read_data(path='./data/data_train.json')
 
-# 提取需要信息
-data_transform_train.extract_data(name='fact')
-train_fact = data_transform_train.extraction['fact']
-
-# #提取需要信息(分词速度太慢，保存分词结果)
-# train_fact_cut=[jieba.lcut(i) for i in train_fact]
-# with open('./data_deal/data_cut/train_fact_cut.json','w') as f:
-#     json.dump(train_fact_cut,f)
+# # 提取需要信息
+# data_transform_train.extract_data(name='fact')
+# train_fact = data_transform_train.extraction['fact']
+#
+# #分词并保存原始分词结果，词语长度后期可以再改
+# train_fact_cut=data_transform_train.cut_texts(texts=train_fact,word_len=1,need_cut=True,
+#                                texts_cut_savepath='./data_deal/data_cut/train_fact_cut.json')
+#
+# #抽取长度大于1的词语,目的在于去除标点和无意义词
+# train_fact_cut_new=data_transform_train.cut_texts(texts=train_fact_cut,word_len=2,need_cut=False,
+#                                texts_cut_savepath='./data_deal/data_cut/train_fact_cut_new.json')
 
 with open('./data_deal/data_cut/train_fact_cut_new.json', 'r') as f:
-    train_fact_cut = json.load(f)
+    train_fact_cut_new = json.load(f)
 
-data_transform_train.text2seq(texts_cut=train_fact_cut, num_words=num_words, maxlen=maxlen)
+data_transform_train.text2seq(texts_cut=train_fact_cut_new, num_words=num_words, maxlen=maxlen)
 tokenizer_fact = data_transform_train.tokenizer_fact
 with open('./data_deal/models/tokenizer_fact_%d.pkl'%(num_words),mode='wb') as f:
     pickle.dump(tokenizer_fact,f)
@@ -53,20 +56,24 @@ data_transform_valid = data_transform()
 # 读取json文件
 data_valid = data_transform_valid.read_data(path='./data/data_valid.json')
 
-# 提取需要信息
-data_transform_valid.extract_data(name='fact')
-valid_fact = data_transform_valid.extraction['fact']
-
-# #提取需要信息(分词速度太慢，保存分词结果)
-# valid_fact_cut=[jieba.lcut(i) for i in valid_fact]
+# # 提取需要信息
+# data_transform_valid.extract_data(name='fact')
+# valid_fact = data_transform_valid.extraction['fact']
+#
+# #分词并保存原始分词结果，词语长度后期可以再改
+# valid_fact_cut=data_transform_valid.cut_texts(texts=valid_fact,word_len=1,need_cut=True,
+#                                texts_cut_savepath='./data_deal/data_cut/valid_fact_cut.json')
+#
+# #抽取长度大于1的词语,目的在于去除标点和无意义词
+# valid_fact_cut_new=data_transform_valid.cut_texts(texts=valid_fact_cut,word_len=2,need_cut=False,
+#                                texts_cut_savepath='./data_deal/data_cut/valid_fact_cut_new.json')
 
 with open('./data_deal/data_cut/valid_fact_cut_new.json', 'r') as f:
-    valid_fact_cut = json.load(f)
+    valid_fact_cut_new = json.load(f)
 
-data_transform_valid.text2seq(texts_cut=valid_fact_cut, tokenizer_fact=tokenizer_fact,
+data_transform_valid.text2seq(texts_cut=valid_fact_cut_new, tokenizer_fact=tokenizer_fact,
                               num_words=num_words, maxlen=maxlen)
 np.save('./data_deal/fact_pad_seq/valid_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_valid.fact_pad_seq)
-# valid_fact_pad_seq=np.load('./data_cut/valid_fact_pad_seq.npy')
 
 # 创建数据one-hot标签
 data_transform_valid.extract_data(name='accusation')
@@ -87,17 +94,22 @@ data_transform_test = data_transform()
 # 读取json文件
 data_test = data_transform_test.read_data(path='./data/data_test.json')
 
-# 提取需要信息
-data_transform_test.extract_data(name='fact')
-test_fact = data_transform_test.extraction['fact']
-
-# #提取需要信息(分词速度太慢，保存分词结果)
-# test_fact_cut=[jieba.lcut(i) for i in test_fact]
+# # 提取需要信息
+# data_transform_test.extract_data(name='fact')
+# test_fact = data_transform_test.extraction['fact']
+#
+# #分词并保存原始分词结果，词语长度后期可以再改
+# test_fact_cut=data_transform_test.cut_texts(texts=test_fact,word_len=1,need_cut=True,
+#                                texts_cut_savepath='./data_deal/data_cut/test_fact_cut.json')
+#
+# #抽取长度大于1的词语,目的在于去除标点和无意义词
+# test_fact_cut_new=data_transform_test.cut_texts(texts=test_fact_cut,word_len=2,need_cut=False,
+#                                texts_cut_savepath='./data_deal/data_cut/test_fact_cut_new.json')
 
 with open('./data_deal/data_cut/test_fact_cut_new.json', 'r') as f:
-    test_fact_cut = json.load(f)
+    test_fact_cut_new = json.load(f)
 
-data_transform_test.text2seq(texts_cut=test_fact_cut, tokenizer_fact=tokenizer_fact,
+data_transform_test.text2seq(texts_cut=test_fact_cut_new, tokenizer_fact=tokenizer_fact,
                              num_words=num_words, maxlen=maxlen)
 np.save('./data_deal/fact_pad_seq/test_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_test.fact_pad_seq)
 # test_fact_pad_seq=np.load('./data_cut/test_fact_pad_seq.npy')
