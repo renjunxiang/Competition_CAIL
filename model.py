@@ -69,14 +69,8 @@ r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index
 p=[y1[i][0]==y2[i][0] for i in range(len(y1))]
 sum(p)/len(p)
 
-def f1(f):
-    def f2(x):
-        return f(x)+100
-    return f2
+with open('./data/%s.txt' % 'accu',encoding='utf-8') as f:
+    label_set = f.readlines()
+    label_set=[i[:-1] for i in label_set]
 
-@f1
-def f3(x):
-    return 2*x
 
-def f4(x):
-    return f3(x)+100

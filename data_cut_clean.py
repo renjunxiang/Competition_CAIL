@@ -1,4 +1,5 @@
 import json
+import pickle
 
 with open('./data_deal/data_cut/train_fact_cut.json', 'r') as f:
     train_fact_cut = json.load(f)

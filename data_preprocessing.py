@@ -1,9 +1,10 @@
 from data_transform import data_transform
 import json
+import pickle
 import jieba
+import numpy as np
 
 jieba.setLogLevel('WARN')
-import numpy as np
 
 num_words=20000
 maxlen=400
@@ -26,8 +27,10 @@ train_fact = data_transform_train.extraction['fact']
 with open('./data_deal/data_cut/train_fact_cut_new.json', 'r') as f:
     train_fact_cut = json.load(f)
 
-data_transform_train.text2seq(texts=train_fact_cut, needcut=False, num_words=num_words, maxlen=maxlen)
+data_transform_train.text2seq(texts_cut=train_fact_cut, num_words=num_words, maxlen=maxlen)
 tokenizer_fact = data_transform_train.tokenizer_fact
+with open('./data_deal/models/tokenizer_fact_%d.pkl'%(num_words),mode='wb') as f:
+    pickle.dump(tokenizer_fact,f)
 np.save('./data_deal/fact_pad_seq/train_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_train.fact_pad_seq)
 # train_fact_pad_seq=np.load('./data_cut/train_fact_pad_seq.npy')
 
@@ -60,8 +63,8 @@ valid_fact = data_transform_valid.extraction['fact']
 with open('./data_deal/data_cut/valid_fact_cut_new.json', 'r') as f:
     valid_fact_cut = json.load(f)
 
-data_transform_valid.text2seq(texts=valid_fact_cut, needcut=False,
-                              tokenizer_fact=tokenizer_fact, num_words=num_words, maxlen=maxlen)
+data_transform_valid.text2seq(texts_cut=valid_fact_cut, tokenizer_fact=tokenizer_fact,
+                              num_words=num_words, maxlen=maxlen)
 np.save('./data_deal/fact_pad_seq/valid_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_valid.fact_pad_seq)
 # valid_fact_pad_seq=np.load('./data_cut/valid_fact_pad_seq.npy')
 
@@ -94,8 +97,8 @@ test_fact = data_transform_test.extraction['fact']
 with open('./data_deal/data_cut/test_fact_cut_new.json', 'r') as f:
     test_fact_cut = json.load(f)
 
-data_transform_test.text2seq(texts=test_fact_cut, needcut=False,
-                             tokenizer_fact=tokenizer_fact, num_words=num_words, maxlen=maxlen)
+data_transform_test.text2seq(texts_cut=test_fact_cut, tokenizer_fact=tokenizer_fact,
+                             num_words=num_words, maxlen=maxlen)
 np.save('./data_deal/fact_pad_seq/test_fact_pad_seq_%d_%d.npy'%(num_words,maxlen), data_transform_test.fact_pad_seq)
 # test_fact_pad_seq=np.load('./data_cut/test_fact_pad_seq.npy')
 
