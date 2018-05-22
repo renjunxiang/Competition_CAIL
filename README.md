@@ -1,5 +1,5 @@
 # Competiton_CAIL
-! [比赛图标](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/比赛图标.png)<br>
+![比赛图标](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/比赛图标.png)<br>
 
 ## 比赛简介
 为了促进法律智能相关技术的发展，在最高人民法院信息中心、共青团中央青年发展部的指导下，中国司法大数据研究院、中国中文信息学会、中电科系统团委联合清华大学、北京大学、中国科学院软件研究所共同举办“2018中国‘法研杯’法律智能挑战赛（CAIL2018）”。<br>
