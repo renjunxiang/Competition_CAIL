@@ -1,5 +1,5 @@
 # Competition_CAIL
-![比赛图标](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/比赛图标.png)<br>
+![比赛图标](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/比赛图标.png)<br>
 
 ## 比赛简介
 为了促进法律智能相关技术的发展，在最高人民法院信息中心、共青团中央青年发展部的指导下，中国司法大数据研究院、中国中文信息学会、中电科系统团委联合清华大学、北京大学、中国科学院软件研究所共同举办“2018中国‘法研杯’法律智能挑战赛（CAIL2018）”。<br>
@@ -51,7 +51,7 @@ np.save('./data_deal/labels/train_labels_accusation.npy', train_labels)
 ```
 ### 模型训练
 * 脚本model.py通过构建双向GRU网络，做多目标检测，结果在result文件夹内<br>
-![](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/Bidirectional_GRU_GlobalMaxPool1D_epochs.png)<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/Bidirectional_GRU_GlobalMaxPool1D_epochs.png)<br>
 ``` python
 from keras.models import Model
 from keras.layers import Dense, Embedding, Input
@@ -101,7 +101,7 @@ r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
 r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
 ```
 * 检查了预测结果，展示部分，仅从文本数据的角度上看可能罪名标签还是有一些问题(不是质疑判决)<br>
-![](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/部分预测结果.png)<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/部分预测结果.png)<br>
 例如**valid数据中第10条**<br>
 {<br>
 	"criminals": ["连某某"], <br>
