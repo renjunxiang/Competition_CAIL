@@ -1,4 +1,4 @@
-# Competiton_CAIL
+# Competition_CAIL
 ![比赛图标](https://github.com/renjunxiang/Competiton_CAIL/blob/master/picture/比赛图标.png)<br>
 
 ## 比赛简介
@@ -90,10 +90,10 @@ y1=label2tag(valid_labels[:])
 y2=predict2tag(predictions=y,n=1, score=False)
 y3=[set_accusation[i>0.5] for i in y]
 
-# 只取最高置信度的准确率，训练2个epoch准确率为0.72，2个epoch准确率为0.78，3个epoch准确率为0.8026
+# 只取最高置信度的准确率，训练1个epoch准确率为0.72，2个epoch准确率为0.78，3个epoch准确率为0.8026
 p=[str(y1[i])==str(y2[i]) for i in range(len(y1))]
 print(sum(p)/len(p))
-# 只取置信度大于0.5的准确率，训练2个epoch准确率为0.66，,3个epoch准确率为0.76，3个epoch准确率为0.7938
+# 只取置信度大于0.5的准确率，训练1个epoch准确率为0.66，,2个epoch准确率为0.76，3个epoch准确率为0.7938
 q=[str(y1[i])==str(y3[i]) for i in range(len(y1))]
 print(sum(q)/len(q))
 
