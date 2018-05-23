@@ -124,3 +124,14 @@ r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index
 该论述出现的粗体属于'走私、贩卖、运输、制造毒品'，我的预测结果应该是正确的(目前贩毒未遂属于争议，国内从重判罚一般认定毒品进入交易环节即为贩毒) **['走私、贩卖、运输、制造毒品', '盗窃']** ，但是数据集中仅有 **['盗窃']** 。
 ### 预测模块
 * 按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中<br>
+``` python
+from predictor import Predictor
+
+content = ['菏泽市牡丹区人民检察院指控，被告人侯某于2014年10月14日晨2时许，'
+           '在菏泽市牡丹区万福办事处赵庄社区罗马皇宫KTV，因琐事对点歌员张某实施殴打，'
+           '致张某双侧鼻骨骨折、上颌骨额突骨折，经法医鉴定，被害人张某的损伤程度为轻伤二级。']
+model = Predictor()
+p = model.predict(content)
+print(p)
+``` 
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/predictor演示.png)<br>
