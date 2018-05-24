@@ -75,27 +75,59 @@ set_accusation = np.load('./data_deal/set/set_accusation.npy')
 model=load_model('./model/Bidirectional_GRU_GlobalMaxPool1D_epochs_2.h5')
 
 def label2tag(labels):
-    return [set_accusation[i == 1] for i in labels]
+    m = []
+    for x in labels:
+        x_return = set_relevant_articles[x == 1]
+        m.append(x_return)
+    return m
 
 
-def predict2tag(predictions, n, score=True):
-    if score:
-        return [set_accusation[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions], \
-               [i[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions]
-    else:
-        return [set_accusation[np.in1d(i, sorted(i, reverse=True)[0:n])] for i in predictions]
+def predict2half(predictions):
+    m = []
+    for x in predictions:
+        x_return = set_relevant_articles[x > 0.5]
+        m.append(x_return)
+    return m
 
-y=model.predict(valid_fact_pad_seq[:])
-y1=label2tag(valid_labels[:])
-y2=predict2tag(predictions=y,n=1, score=False)
-y3=[set_accusation[i>0.5] for i in y]
+def predict2toptag(predictions):
+    m = []
+    for x in predictions:
+        x_return = set_relevant_articles[x == x.max()]
+        m.append(x_return)
+    return m
 
-# 只取最高置信度的准确率，训练1个epoch准确率为0.72，2个epoch准确率为0.78，3个epoch准确率为0.8026
-p=[str(y1[i])==str(y2[i]) for i in range(len(y1))]
-print(sum(p)/len(p))
-# 只取置信度大于0.5的准确率，训练1个epoch准确率为0.66，,2个epoch准确率为0.76，3个epoch准确率为0.7938
-q=[str(y1[i])==str(y3[i]) for i in range(len(y1))]
-print(sum(q)/len(q))
+
+def predict2tag(predictions):
+    m = []
+    for x in predictions:
+        x_return = set_relevant_articles[x > 0.5]
+        if len(x_return) == 0:
+            x_return = set_relevant_articles[x == x.max()]
+        m.append(x_return)
+    return m
+
+
+y = model.predict(valid_fact_pad_seq[:])
+y1 = label2tag(valid_labels[:])
+y2 = predict2toptag(y)
+y3 = predict2half(y)
+y4 = predict2tag(y)
+
+# 罪名预测
+# 只取最高置信度的准确率，训练1个epoch准确率为0.72，2个epoch准确率为0.7850，3个epoch准确率为0.8026
+s1=[str(y1[i]) == str(y2[i]) for i in range(len(y1))]
+print(sum(s1) / len(s1))
+# 只取置信度大于0.5的准确率，训练1个epoch准确率为0.66，,2个epoch准确率为0.7646，3个epoch准确率为0.7938
+s2=[str(y1[i]) == str(y3[i]) for i in range(len(y1))]
+print(sum(s2) / len(s2))
+# 结合前两个，训练2个epoch准确率为0.8071，3个epoch准确率为0.8213
+s3=[str(y1[i]) == str(y4[i]) for i in range(len(y1))]
+print(sum(s3) / len(s3))
+
+# 法规预测
+# 1个epoch：0.6448543575973381，0.5743972914599265，0.6631253283521102
+# 2个epoch：0.7380771700426129，0.7403537446733991，0.770532951958438
+# 3个epoch：0.7582744731772809，0.7640534703169692，0.7894460335065087
 
 r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
 r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
