@@ -113,7 +113,7 @@ y2 = predict2toptag(y)
 y3 = predict2half(y)
 y4 = predict2tag(y)
 
-# 罪名预测
+# 罪名预测，官网评测0.7638
 # 只取最高置信度的准确率，训练1个epoch准确率为0.72，2个epoch准确率为0.7850，3个epoch准确率为0.8026
 s1=[str(y1[i]) == str(y2[i]) for i in range(len(y1))]
 print(sum(s1) / len(s1))
@@ -132,7 +132,7 @@ print(sum(s3) / len(s3))
 r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
 r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
 ```
-* 检查了预测结果，展示部分，仅从文本数据的角度上看可能罪名标签应该需要人为的做进一步加工(不是质疑判决)<br>
+检查了预测结果，展示部分，仅从文本数据的角度上看可能罪名标签应该需要人为的做进一步加工(不是质疑判决)<br>
 ![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/部分预测结果.png)<br>
 例如**valid数据中第10条**<br>
 {<br>
@@ -155,7 +155,7 @@ r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index
 	} <br>
 该论述出现的粗体属于'走私、贩卖、运输、制造毒品'，预测结果是(目前贩毒未遂属于争议，国内从重判罚一般认定毒品进入交易环节即为贩毒) **['走私、贩卖、运输、制造毒品', '盗窃']** ，但是数据集中仅有 **['盗窃']** 。
 ### 预测模块
-* 按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中<br>
+按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中<br>
 ``` python
 from predictor import Predictor
 
