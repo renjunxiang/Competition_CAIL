@@ -121,7 +121,7 @@ print(p)
 ``` 
 ![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/predictor演示.png)<br>
 
-**最后祝愿各位选手获得好成绩！如果有什么数据量比较小不拼硬件的文本分类中文比赛也请推荐下，kaggle上好像都是英文的，我想学习一下中文预处理的各种提升方法**
+**最后祝愿各位选手获得好成绩！如果有什么数据量比较小、不拼硬件的文本分类中文比赛也请推荐下，kaggle上好像都是英文的，我想学习一下中文预处理的各种提升方法**
 
 
 
