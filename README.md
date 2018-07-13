@@ -1,7 +1,15 @@
 # Competition_CAIL
 ![比赛图标](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/比赛图标.png)<br>
 
-## **小小说明：**
+## **比赛简介**
+为了促进法律智能相关技术的发展，在最高人民法院信息中心、共青团中央青年发展部的指导下，中国司法大数据研究院、中国中文信息学会、中电科系统团委联合清华大学、北京大学、中国科学院软件研究所共同举办“2018中国‘法研杯’法律智能挑战赛（CAIL2018）”。<br>
+
+## 比赛任务：
+**罪名预测：根据刑事法律文书中的案情描述和事实部分，预测被告人被判的罪名；**<br>
+**法条推荐：根据刑事法律文书中的案情描述和事实部分，预测本案涉及的相关法条；**<br>
+**刑期预测：根据刑事法律文书中的案情描述和事实部分，预测被告人的刑期长短。**<br>
+
+## **2018.06.20说明：**
 **鉴于主办方禁止共享代码和模型，代码更新将在比赛结束后进行。**<br>
 此前上传的代码（2018.5.24）仅仅是刚刚参赛时的一个分析思路，但足够超过基准线。但是要获得好名次，需要对预处理和神经网络做不少调整。毕竟，数据决定模型能达到的高度，模型仅能逼近那个高度。<br>
 **20180525成绩**<br>
@@ -23,140 +31,44 @@
 **暂时就这些，平时我只上传代码没看过评论，所以不能及时回复各位请海涵~由于老大要每周汇报进展，这是20180531的排名（现在已经不知道掉哪里去了，哈哈），相信各位都能取得好成绩**<br>
 ![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/20180531成绩.png)<br>
 
-## **比赛简介**
-为了促进法律智能相关技术的发展，在最高人民法院信息中心、共青团中央青年发展部的指导下，中国司法大数据研究院、中国中文信息学会、中电科系统团委联合清华大学、北京大学、中国科学院软件研究所共同举办“2018中国‘法研杯’法律智能挑战赛（CAIL2018）”。<br>
+## **2018.07.13：**
+转眼间第一阶段的比赛还有两天就结束了，实现之前的承诺，**公开全部代码和分析思路**。ps：后来用公司注册的账号，自己的账号提交了三四次就不用了，反正很伤心555~<br>
+说实话还是有点小郁闷的。因为没有用服务器参赛的经验，一开始是8G内存1060maxq的游戏本；在6月5日配的一块P4显卡服务器开始做正赛，训练速度只有1060maxq的一半，一层最简单的卷积要训练2.5小时；后来在7月5号新配了一台一块P100的服务器，速度是P4的7倍，但是在数据加强后超过三层的CNN和单层RNN依然需要将近2小时才能完成一轮训练，所剩无几的时间也基本放弃了，提交了一次简单数据加强后的模型第一问成绩提高了0.5%。虽然在一开始三问都能进入前三，但是后来的大牛越来越多、大家使用的模型越来越复杂，没有时间再深入研究更多的模型和优化方法。<br>
+所以，后面提供的分析思路、网络代码、效果分析、模型评估，都是在**不超过2层卷积和轻度数据增强**的基础上实现的，不代表复杂模型的效果，仅供参考！<br>
+PS：因为不同时间在不同机器上做的，有几个版本找不到了，代码可能不连贯、存在路径错误或者函数丢失，各位轻喷~
 
-## 比赛任务：
-**罪名预测：根据刑事法律文书中的案情描述和事实部分，预测被告人被判的罪名；**<br>
-**法条推荐：根据刑事法律文书中的案情描述和事实部分，预测本案涉及的相关法条；**<br>
-**刑期预测：根据刑事法律文书中的案情描述和事实部分，预测被告人的刑期长短。**<br>
+## **分析思路：**
+**我理想中的流程是：**<br>
+第一轮： 分词 》 剔除停用词 》 特征表达 》 单一模型训练 》评估 》优化<br>
+第二轮： 数据增强 》 单一模型训练 》评估 》优化<br>
+第三轮： 模型融合 》 评估 》优化<br>
+<br>
+**基于此，我的做法是：**<br>
+分词：结巴，可以考虑引入外部词库提高分词精确性<br>
+<br>
+剔除停用词：我直接把长度为1的字符串删了，这个也是偷懒但还挺有效的方法，标点、语气词等一般都是1个长度<br>
+<br>
+特征表达：我是先将词语转成id，一开始保留4万个词语效果不太好，成绩大致是86-83-72；后来保留8万个词语，成绩大概是87.5-84-73.5，然后接入embedding层计算词向量。词语少了特征表达不足，多了很多低频词汇干扰词向量的表达效果。这里可以尝试tf-idf，不过很多人名地名会有特殊性，有能力的还可以采用实体识别的方式做过滤<br>
+<br>
+单一模型训练：受限于硬件，我用了一层CNN1D，512个卷积核、卷积核大小3，接全局最大池化(GlobalMaxPool1D)，再正则化(BN)后接全连接，最后用sigmod做类别得分，第三问用relu。因为没有足够的时间去训练深度网络和模型融合，只能力求增加模型宽度+BN加速收敛<br>
+另外第三问有很多人用分类模型，我在训练赛试过成绩不太好。我猜测是分类的话可能稍有不慎就归到了差距很大的类别，如果当成连续变量至多是两类的平均数，所以我更倾向于用连续变量来做。<br>
+<br>
+评估：一开始我是用准确率(accu)来做的，因为一开始探索的时候训练一般都是不充分的，accu可以看出多类别是不是能有效预测出来，训练赛感觉提交分数和accu的结果正相关；后来大数据集的时候多标签的样本显著减少，并且数据大了容易达到数据和模型的瓶颈，就考虑和官网一样用f1来评估，关注样本少的类别效果。<br>
+<br>
+优化：我能做的也只是1层变2层、RNN换CNN、增加词向量维度、增加卷积核数量和改变卷积核尺寸。测试下来1-3层卷积的成绩差不多，2层是最好的，但也只是高了0.1%左右，很可能只是运气问题。词向量512要高于256、卷积核数量512要高于256，rnn效果不如cnn(后面我会谈一下原因，但是多层的话我就不知道了)<br>
+<br>
+数据增强：因为句子长度差距比较大(我记得200长度好像92%，300长度95%，400长度98%)，我最终是取了400长度。<br>
+尝试过对句子内部词语做混洗打乱顺序，成绩只降低了一点点。结合断案的思路，一般也是看fact的关键词，所以我认为CNN在这里的特征提取表现会好于RNN的上下文理解。<br>尝试过对类别样本少的做重抽样，试了几次扩大不超过60000、扩大倍数不超过10的效果比较好，扩大不超过100000、扩大倍数不超过100效果很差。可能因为类别样本少的特征不具有代表性，重抽样过拟合的可能性很大。<br>
+<br>
+模型融合：提交过一次RNN、CNN和残差CNN的融合，因为那天比赛服务器断电提交失败就没试过，一般情况下都会有提升。
 
 ## **成果说明：**
 **代码分三大块，分别是：**
 
 ### **1.数据预处理**
-**方法模块data_transform.py和脚本data_preprocessing.py，包含读取数据文件、数据内容提取、分词、转成序号列表、文本长度统一**<br>
-**受限于数据大小，仅提供验证集预处理后的数据供参考**
-``` python
-from data_transform import data_transform
-import json
-import numpy as np
-
-num_words=20000
-maxlen=400
-
-# train数据集处理
-data_transform_train = data_transform()
-
-# 读取json文件
-data_train = data_transform_train.read_data(path='./data/data_train.json')
-
-# 提取需要信息
-data_transform_train.extract_data(name='fact')
-train_fact = data_transform_train.extraction['fact']
-
-#分词并保存原始分词结果，词语长度后期可以再改
-train_fact_cut=data_transform_train.cut_texts(texts=train_fact,word_len=1,need_cut=True,
-                               texts_cut_savepath='./data_deal/data_cut/train_fact_cut.json')
-
-#抽取长度大于1的词语,目的在于去除标点和无意义词
-train_fact_cut_new=data_transform_train.cut_texts(texts=train_fact_cut,word_len=2,need_cut=False,
-                               texts_cut_savepath='./data_deal/data_cut/train_fact_cut_new.json')
-							   
-# 文本转序列
-data_transform_train.text2seq(texts_cut=train_fact_cut_new, num_words=num_words, maxlen=maxlen)
-tokenizer_fact = data_transform_train.tokenizer_fact
-
-# 创建数据one-hot标签
-data_transform_train.extract_data(name='accusation')
-train_accusations = data_transform_train.extraction['accusation']
-data_transform_train.creat_label_set(name='accusation')
-train_labels = data_transform_train.creat_labels(name='accusation')
-np.save('./data_deal/labels/train_labels_accusation.npy', train_labels)
-```
-### **2.模型训练**
-**脚本model.py通过构建双向GRU网络，做多目标检测，结果在result文件夹内**<br>
-![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/Bidirectional_GRU_GlobalMaxPool1D_epochs.png)<br>
-``` python
-from keras.models import Model
-from keras.layers import Dense, Embedding, Input
-from keras.layers import GRU, Bidirectional, GlobalMaxPool1D, Dropout
-from keras.utils.vis_utils import plot_model
-import numpy as np
-import pandas as pd
-from keras.models import load_model
-
-num_words=20000
-maxlen=400
-
-train_fact_pad_seq = np.load('./data_deal/fact_pad_seq/train_fact_pad_seq_%d_%d.npy'%(num_words,maxlen))
-valid_fact_pad_seq = np.load('./data_deal/fact_pad_seq/valid_fact_pad_seq_%d_%d.npy'%(num_words,maxlen))
-
-train_labels = np.load('./data_deal/labels/train_labels_accusation.npy')
-valid_labels = np.load('./data_deal/labels/valid_labels_accusation.npy')
-
-set_accusation = np.load('./data_deal/set/set_accusation.npy')
-
-model=load_model('./model/Bidirectional_GRU_GlobalMaxPool1D_epochs_2.h5')
-
-def label2tag(labels):
-    m = []
-    for x in labels:
-        x_return = set_relevant_articles[x == 1]
-        m.append(x_return)
-    return m
-
-
-def predict2half(predictions):
-    m = []
-    for x in predictions:
-        x_return = set_relevant_articles[x > 0.5]
-        m.append(x_return)
-    return m
-
-def predict2toptag(predictions):
-    m = []
-    for x in predictions:
-        x_return = set_relevant_articles[x == x.max()]
-        m.append(x_return)
-    return m
-
-
-def predict2tag(predictions):
-    m = []
-    for x in predictions:
-        x_return = set_relevant_articles[x > 0.5]
-        if len(x_return) == 0:
-            x_return = set_relevant_articles[x == x.max()]
-        m.append(x_return)
-    return m
-
-
-y = model.predict(valid_fact_pad_seq[:])
-y1 = label2tag(valid_labels[:])
-y2 = predict2toptag(y)
-y3 = predict2half(y)
-y4 = predict2tag(y)
-
-# 罪名预测，官网评测0.7638
-# 只取最高置信度的准确率，训练1个epoch准确率为0.72，2个epoch准确率为0.7850，3个epoch准确率为0.8026
-s1=[str(y1[i]) == str(y2[i]) for i in range(len(y1))]
-print(sum(s1) / len(s1))
-# 只取置信度大于0.5的准确率，训练1个epoch准确率为0.66，,2个epoch准确率为0.7646，3个epoch准确率为0.7938
-s2=[str(y1[i]) == str(y3[i]) for i in range(len(y1))]
-print(sum(s2) / len(s2))
-# 结合前两个，训练2个epoch准确率为0.8071，3个epoch准确率为0.8213
-s3=[str(y1[i]) == str(y4[i]) for i in range(len(y1))]
-print(sum(s3) / len(s3))
-
-# 法规预测
-# 1个epoch：0.6448543575973381，0.5743972914599265，0.6631253283521102
-# 2个epoch：0.7380771700426129，0.7403537446733991，0.770532951958438
-# 3个epoch：0.7582744731772809，0.7640534703169692，0.7894460335065087
-
-r=pd.DataFrame({'label':y1,'predict':y2,'predict_list':y3})
-r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index=False)
-```
+由于170万数据比较大，我采用分块处理，在文件夹data_preprocessing中。方法模块为data_transform.py(因为更换服务器新写的代码不见了，懒得改了就上传原来的)包含读取数据文件、数据内容提取、分词、转成序号列表、文本长度统一。脚本代码在data_preprocessing文件夹<br>
+<br>
+**受限于数据大小，仅提供验证集预处理后的数据供参考(这是练习赛的)**
 **检查了预测结果，展示部分，仅从文本数据的角度上看可能罪名标签应该需要人为的做进一步加工(不是质疑判决)**<br>
 ![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/部分预测结果.png)<br>
 例如**valid数据中第10条**<br>
@@ -180,6 +92,21 @@ r.to_excel('./result/valid_Bidirectional_GRU_epochs_2.xlsx',sheet_name='1',index
 	} <br>
 该论述出现的粗体属于'走私、贩卖、运输、制造毒品'，预测结果是(目前贩毒未遂属于争议，国内从重判罚一般认定毒品进入交易环节即为贩毒) **['走私、贩卖、运输、制造毒品', '盗窃']** ，但是数据集中仅有 **['盗窃']** 。
 
+### **2.训练模型**
+我是分任务做的，也可以一个网络多个输出，不过我觉得那样可能会互相干扰。我主要用了一层CNN，另外提供TextCNN、attention、resnet简化版供参考。已经尝试过的TextCNN效果不好、CNN+attention效果不好、4层CNN的resnet效果不好，两层CNN构成的resnet效果比较好，可能是因为我一开始的网络太宽了过拟合比较严重。一般我只训练10-20个epoch很可能没有收敛，后来为了提高收敛速度batchsize改成256可能过拟合了。<br>
+我自己一层CNN+轻度数据增强，成绩为87.99-85.92-73.68，如果能够精细的做好数据增强、搭建合理的融合网络，加上几块1080ti做好调参工作，训练足够多的次数，应该能获得不错的成绩。这里提供任务一代码，任务二没区别，任务三最后用一个神经元激活用relu，损失函数mae或者mse<br>
+**练习赛的一层RNN**<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/Bidirectional_GRU_GlobalMaxPool1D_epochs.png)<br>
+
+**TextCNN**<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/TextCNN.png)<br>
+
+**Attention**<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/attention.png)<br>
+
+**Resnet**<br>
+![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/resnet.png)<br>
+
 ### **3.预测模块**
 **按照大赛要求将分词、转成序号列表、文本长度统一和模型预测等步骤封装在predictor文件夹中**<br>
 ``` python
@@ -194,6 +121,7 @@ print(p)
 ``` 
 ![](https://github.com/renjunxiang/Competition_CAIL/blob/master/picture/predictor演示.png)<br>
 
+**最后祝愿各位选手获得好成绩！如果有什么数据量比较小不拼硬件的文本分类中文比赛也请推荐下，kaggle上好像都是英文的，我想学习一下中文预处理的各种提升方法**
 
 
 

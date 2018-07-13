@@ -22,7 +22,6 @@ class data_transform():
         读取json文件,必须readlines，否则中间有格式会报错
         :param path: 文件路径
         :return:json数据
-        eg. data_valid = data_transform.read_data(path='./data/data_valid.json')
         '''
         self.data_path = path
         f = open(path, 'r', encoding='utf8')
@@ -42,16 +41,24 @@ class data_transform():
         提取需要的信息，以字典形式存储
         :param name: 提取内容
         :return: 事实描述,罪名,相关法条
-        eg. data_valid_accusations = data_transform.extract_data(name='accusation')
         '''
         data = self.data
         if name == 'fact':
             extraction = list(map(lambda x: x['fact'], data))
         elif name in ['accusation', 'relevant_articles']:
             extraction = list(map(lambda x: x['meta'][name], data))
+        elif name == 'imprisonment':
+            extraction = []
+            for i in data:
+                if i['meta']['term_of_imprisonment']['death_penalty']:
+                    extraction.append([500])
+                elif i['meta']['term_of_imprisonment']['life_imprisonment']:
+                    extraction.append([400])
+                else:
+                    extraction.append([i['meta']['term_of_imprisonment']['imprisonment']])
         self.extraction.update({name: extraction})
 
-    def cut_texts(self, texts=None, need_cut=True,word_len=1, texts_cut_savepath=None):
+    def cut_texts(self, texts=None, need_cut=True, word_len=1, texts_cut_savepath=None):
         '''
         文本分词剔除停用词
         :param texts:文本列表
@@ -84,7 +91,6 @@ class data_transform():
         :param num_words:字典词数量
         :param maxlen:保留长度
         :return:向量列表
-        eg. ata_transform.text2seq(texts_cut=train_fact_cut,num_words=2000, maxlen=500)
         '''
         texts_cut_len = len(texts_cut)
 
@@ -131,10 +137,14 @@ class data_transform():
         '''
         if name == 'accusation':
             name_f = 'accu'
+            with open('./data/%s.txt' % name_f, encoding='utf-8') as f:
+                label_set = f.readlines()
         elif name == 'relevant_articles':
             name_f = 'law'
-        with open('./data/%s.txt' % name_f, encoding='utf-8') as f:
-            label_set = f.readlines()
+            with open('./data/%s.txt' % name_f, encoding='utf-8') as f:
+                label_set = f.readlines()
+        else:
+            label_set = [400, 500] + list(range(1, 25 * 12 + 1))
         label_set = [i[:-1] for i in label_set]
         self.label_set.update({name: np.array(label_set)})
 
@@ -146,8 +156,9 @@ class data_transform():
         :return: 标签one-hot
         eg. creat_label(label=data_valid_accusations[12], label_set=accusations_set)
         '''
+        label_str = [str(i) for i in label]
         label_zero = np.zeros(len(label_set))
-        label_zero[np.in1d(label_set, label)] = 1
+        label_zero[np.in1d(label_set, label_str)] = 1
         return label_zero
 
     def creat_labels(self, label_set=None, labels=None, name='accusation'):
