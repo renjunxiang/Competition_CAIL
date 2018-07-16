@@ -49,9 +49,18 @@ class data_transform():
             extraction = list(map(lambda x: x['fact'], data))
         elif name in ['accusation', 'relevant_articles']:
             extraction = list(map(lambda x: x['meta'][name], data))
+        elif name == 'imprisonment':
+            extraction = []
+            for i in data:
+                if i['meta']['term_of_imprisonment']['death_penalty']:
+                    extraction.append([500])
+                elif i['meta']['term_of_imprisonment']['life_imprisonment']:
+                    extraction.append([400])
+                else:
+                    extraction.append([i['meta']['term_of_imprisonment']['imprisonment']])
         self.extraction.update({name: extraction})
 
-    def cut_texts(self, texts=None, need_cut=True,word_len=1, texts_cut_savepath=None):
+    def cut_texts(self, texts=None, need_cut=True, word_len=1, texts_cut_savepath=None):
         '''
         文本分词剔除停用词
         :param texts:文本列表
@@ -146,8 +155,9 @@ class data_transform():
         :return: 标签one-hot
         eg. creat_label(label=data_valid_accusations[12], label_set=accusations_set)
         '''
+        label_str = [str(i) for i in label]
         label_zero = np.zeros(len(label_set))
-        label_zero[np.in1d(label_set, label)] = 1
+        label_zero[np.in1d(label_set, label_str)] = 1
         return label_zero
 
     def creat_labels(self, label_set=None, labels=None, name='accusation'):
